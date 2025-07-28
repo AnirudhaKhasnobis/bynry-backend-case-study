@@ -1,5 +1,5 @@
 from flask import Flask, request
-from models import db, Product, Inventory, Warehouse  # assuming these are already defined
+from models import db, Product, Inventory, Warehouse  # assuming models are defined
 
 app = Flask(__name__)
 
@@ -10,13 +10,11 @@ def create_product():
         if not data:
             return {"error": "Request body must be valid JSON"}, 400
 
-        # Required fields check
         required = ['name', 'sku', 'price', 'warehouse_id', 'initial_quantity']
         missing = [field for field in required if field not in data]
         if missing:
             return {"error": f"Missing fields: {', '.join(missing)}"}, 400
 
-        # Validate price
         try:
             price = float(data['price'])
             if price < 0:
@@ -24,7 +22,6 @@ def create_product():
         except:
             return {"error": "Price must be a valid number"}, 400
 
-        # Validate quantity
         try:
             quantity = int(data['initial_quantity'])
             if quantity < 0:
@@ -32,25 +29,21 @@ def create_product():
         except:
             return {"error": "Quantity must be a valid integer"}, 400
 
-        # Check if SKU already exists
         if Product.query.filter_by(sku=data['sku']).first():
             return {"error": "SKU already exists"}, 409
 
-        # Check if warehouse exists
         warehouse = Warehouse.query.get(data['warehouse_id'])
         if not warehouse:
             return {"error": "Warehouse not found"}, 404
 
-        # Create new product (not tied to any one warehouse directly)
         product = Product(
             name=data['name'],
             sku=data['sku'],
             price=price
         )
         db.session.add(product)
-        db.session.flush()  # gets product.id without committing yet
+        db.session.flush()
 
-        # Create inventory entry for the initial quantity
         inventory = Inventory(
             product_id=product.id,
             warehouse_id=data['warehouse_id'],
@@ -58,7 +51,6 @@ def create_product():
         )
         db.session.add(inventory)
 
-        # Final commit
         db.session.commit()
         return {"message": "Product created", "product_id": product.id}, 201
 
