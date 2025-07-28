@@ -1,5 +1,5 @@
 from flask import Flask, request
-from models import db, Product, Inventory, Warehouse  # assuming models are defined
+from models import db, Product, Inventory, Warehouse  # Assuming these are defined elsewhere
 
 app = Flask(__name__)
 
@@ -8,7 +8,7 @@ def create_product():
     try:
         data = request.get_json()
         if not data:
-            return {"error": "Request body must be valid JSON"}, 400
+            return {"error": "Invalid or missing JSON body"}, 400
 
         required = ['name', 'sku', 'price', 'warehouse_id', 'initial_quantity']
         missing = [field for field in required if field not in data]
@@ -20,14 +20,14 @@ def create_product():
             if price < 0:
                 return {"error": "Price must be non-negative"}, 400
         except:
-            return {"error": "Price must be a valid number"}, 400
+            return {"error": "Invalid price format"}, 400
 
         try:
             quantity = int(data['initial_quantity'])
             if quantity < 0:
                 return {"error": "Quantity must be non-negative"}, 400
         except:
-            return {"error": "Quantity must be a valid integer"}, 400
+            return {"error": "Invalid quantity format"}, 400
 
         if Product.query.filter_by(sku=data['sku']).first():
             return {"error": "SKU already exists"}, 409
@@ -56,4 +56,4 @@ def create_product():
 
     except Exception as e:
         db.session.rollback()
-        return {"error": "Something went wrong", "details": str(e)}, 500
+        return {"error": "Internal server error", "details": str(e)}, 500
