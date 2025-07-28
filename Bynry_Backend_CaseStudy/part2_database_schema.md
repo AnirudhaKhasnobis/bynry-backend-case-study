@@ -1,4 +1,4 @@
-# 📊 Database Schema – Inventory Management System
+# 🗃️ Database Schema – Inventory Management System
 
 ---
 
@@ -15,7 +15,7 @@ companies (
 -- Warehouses
 warehouses (
   id SERIAL PRIMARY KEY,
-  company_id INT NOT NULL REFERENCES companies(id),
+  company_id INT REFERENCES companies(id),
   name VARCHAR(100),
   location TEXT,
   created_at TIMESTAMP DEFAULT NOW()
@@ -26,7 +26,7 @@ products (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   sku VARCHAR(50) UNIQUE NOT NULL,
-  price NUMERIC(10,2),
+  price NUMERIC(10, 2),
   is_bundle BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
 )
@@ -47,7 +47,7 @@ suppliers (
   contact_email VARCHAR(255)
 )
 
--- Product-Supplier (many-to-many)
+-- Product-Supplier mapping
 product_suppliers (
   product_id INT REFERENCES products(id),
   supplier_id INT REFERENCES suppliers(id),
